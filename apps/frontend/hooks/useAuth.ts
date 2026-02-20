@@ -1,7 +1,6 @@
 import { usePrivy } from '@privy-io/react-auth';
 import { useEffect } from 'react';
 import apiClient from '@/lib/api/client';
-import { logger } from '@/lib/utils';
 
 export function useAuth() {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
