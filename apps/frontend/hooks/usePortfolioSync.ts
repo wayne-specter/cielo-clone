@@ -37,9 +37,9 @@ export function usePortfolioSync(walletAddress?: string) {
       return response.data.data;
     },
     enabled: !!walletAddress,
-    refetchInterval: (data) => {
+    refetchInterval: (query) => {
       // Keep refetching if still processing
-      const status = data?.status?.syncStatus;
+      const status = query.state.data?.status?.syncStatus;
       if (status === 'pending' || status === 'processing') {
         return 3000; // Poll every 3 seconds
       }
