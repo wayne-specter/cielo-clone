@@ -1,0 +1,32 @@
+{
+  "name": "cielo-clone",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack crypto trading analytics platform - Cielo Finance clone",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "db:generate": "cd apps/backend && npm run db:generate",
+    "db:push": "cd apps/backend && npm run db:push",
+    "db:studio": "cd apps/backend && npm run db:studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "turbo": "^1.12.4",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "packageManager": "npm@10.2.4"
+}

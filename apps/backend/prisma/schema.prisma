@@ -1,0 +1,226 @@
+// This is your Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id            String   @id @default(cuid())
+  walletAddress String   @unique
+  email         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  trackedWallets         TrackedWallet[]
+  alerts                 Alert[]
+  apiKeys                ApiKey[]
+  walletSyncs            WalletSync[]
+  dailyPortfolio         DailyPortfolio[]
+  portfolioTransactions  PortfolioTransaction[]
+
+  @@map("users")
+}
+
+// Tracked wallets
+model TrackedWallet {
+  id        String   @id @default(cuid())
+  userId    String
+  address   String
+  label     String?
+  chain     String
+  addedAt   DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, address, chain])
+  @@index([userId])
+  @@index([address])
+  @@map("tracked_wallets")
+}
+
+// Tokens
+model Token {
+  id       String @id @default(cuid())
+  address  String
+  symbol   String
+  name     String
+  decimals Int
+  logoUri  String?
+  chain    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([address, chain])
+  @@index([symbol])
+  @@index([chain])
+  @@map("tokens")
+}
+
+// Price history (time-series data)
+model PriceHistory {
+  id         String   @id @default(cuid())
+  tokenId    String
+  price      Float
+  volume24h  Float
+  marketCap  Float
+  liquidity  Float
+  timestamp  DateTime @default(now())
+
+  @@index([tokenId, timestamp])
+  @@map("price_history")
+}
+
+// Historical token prices (end-of-day prices for portfolio calculations)
+model TokenPrice {
+  id           String   @id @default(cuid())
+  tokenAddress String   // Token mint address
+  chain        String   @default("solana")
+  date         DateTime // Date at midnight UTC
+  price        Float    // Price in USD at end of day
+  source       String   // coingecko, binance, swap, etc.
+  createdAt    DateTime @default(now())
+
+  @@unique([tokenAddress, chain, date])
+  @@index([tokenAddress, date])
+  @@map("token_prices")
+}
+
+// Alerts
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // 'price', 'wallet', 'token'
+  condition String   // 'above', 'below', 'change'
+  value     Float
+  target    String   // token address or wallet address
+  chain     String
+  enabled   Boolean  @default(true)
+  lastTriggered DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([target])
+  @@map("alerts")
+}
+
+// API Keys for premium users
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   @unique
+  name      String?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  lastUsed  DateTime?
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("api_keys")
+}
+
+// Transaction history
+model Transaction {
+  id        String   @id @default(cuid())
+  hash      String   @unique
+  from      String
+  to        String
+  value     String
+  tokenAddress String?
+  chain     String
+  type      String   // 'send', 'receive', 'swap', 'stake'
+  timestamp DateTime
+  blockNumber Int
+
+  @@index([from])
+  @@index([to])
+  @@index([timestamp])
+  @@map("transactions")
+}
+
+// Wallet sync status (track portfolio calculation progress)
+model WalletSync {
+  id              String   @id @default(cuid())
+  userId          String
+  walletAddress   String
+  chain           String
+  syncStatus      String   @default("pending") // pending, processing, completed, failed
+  lastSyncedBlock Int?
+  startDate       DateTime @default("2026-01-01T00:00:00Z")
+  completedAt     DateTime?
+  errorMessage    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, walletAddress, chain])
+  @@index([userId])
+  @@index([syncStatus])
+  @@map("wallet_syncs")
+}
+
+// Daily portfolio snapshots
+model DailyPortfolio {
+  id              String   @id @default(cuid())
+  userId          String
+  walletAddress   String
+  chain           String
+  date            DateTime // Date of snapshot (midnight UTC)
+  totalValue      Float    // Total portfolio value in USD
+  dailyPnL        Float    // Daily P&L in USD
+  dailyPnLPercent Float    // Daily P&L in percentage
+  holdings        Json     // Array of token holdings with amounts and values
+  createdAt       DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, walletAddress, chain, date])
+  @@index([userId, date])
+  @@index([walletAddress])
+  @@map("daily_portfolio")
+}
+
+// Portfolio transactions (parsed from blockchain)
+model PortfolioTransaction {
+  id            String   @id @default(cuid())
+  userId        String
+  walletAddress String
+  chain         String
+  txHash        String
+  tokenAddress  String
+  tokenSymbol   String
+  tokenName     String
+  type          String   // buy, sell, transfer_in, transfer_out
+  amount        Float    // Amount of tokens
+  priceUsd      Float    // Price in USD at time of transaction
+  valueUsd      Float    // Total value in USD
+  timestamp     DateTime
+  blockNumber   Int
+  createdAt     DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([txHash, tokenAddress])
+  @@index([userId])
+  @@index([walletAddress])
+  @@index([timestamp])
+  @@map("portfolio_transactions")
+}
