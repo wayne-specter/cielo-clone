@@ -69,7 +69,7 @@ export default function PortfolioPage() {
             📊 Portfolio Tracker
           </h1>
           <p className="text-gray-400">
-            Track any Solana wallet's performance and P&L across time
+            Track any Solana wallet&apos;s performance and P&amp;L across time
           </p>
         </div>
 

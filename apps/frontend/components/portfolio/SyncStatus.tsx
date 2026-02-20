@@ -26,7 +26,7 @@ export function SyncStatus({ syncStatus, isLoading, walletAddress }: SyncStatusP
           <div>
             <p className="text-yellow-400 font-medium">Portfolio Not Synced</p>
             <p className="text-gray-400 text-sm mt-1">
-              Your wallet portfolio hasn't been synced yet. We'll start syncing automatically.
+              Your wallet portfolio hasn&apos;t been synced yet. We&apos;ll start syncing automatically.
             </p>
           </div>
         </div>

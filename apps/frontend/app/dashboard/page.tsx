@@ -89,7 +89,7 @@ export default function DashboardPage() {
         <div className="bg-muted rounded-lg p-8 text-center">
           <h3 className="text-2xl font-bold mb-2">More Features Coming Soon</h3>
           <p className="text-muted-foreground mb-6">
-            We're building trending tokens, portfolio tracking, and real-time alerts!
+            We&apos;re building trending tokens, portfolio tracking, and real-time alerts!
           </p>
           <div className="flex gap-4 justify-center">
             <Button variant="outline">View Trending Tokens</Button>
